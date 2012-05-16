@@ -19,6 +19,7 @@ package se.danetest.shibboleth.extension;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.opensaml.xml.security.credential.Credential;
 import org.opensaml.xml.security.credential.StaticCredentialResolver;
 import org.opensaml.xml.security.keyinfo.BasicProviderKeyInfoCredentialResolver;
@@ -36,7 +37,7 @@ import org.springframework.beans.factory.config.AbstractFactoryBean;
  * Spring factory bean used to created {@link ExplicitKeySignatureTrustEngine}s based on a static credential resolver.
  */
 public class DaneStaticExplicitKeySignatureTrustEngineFactoryBean extends AbstractFactoryBean {
-	
+				 
 	/** Class logger. */
 	private final Logger log = LoggerFactory.getLogger(DaneStaticExplicitKeySignatureTrustEngineFactoryBean.class);
     
@@ -59,13 +60,11 @@ public class DaneStaticExplicitKeySignatureTrustEngineFactoryBean extends Abstra
      * @param newCredentials the new list of trusted credentials
      */
     public void setCredentials(List<Credential> newCredentials) {
-    	log.debug("[DaneExtension] Set credentials");
         credentials = newCredentials;
-        log.debug("[DaneExtension] Set credentials to newCredentials");
+        log.debug("[DaneExtension] Credentials set to newCredentials = {} ", credentials);
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("rawtypes")
 	public Class getObjectType() {
     	log.debug("[DaneExtension] Returning DaneStaticExplicitKeySignatureTrustEngine");
         return DaneExplicitKeySignatureTrustEngine.class;
@@ -73,20 +72,27 @@ public class DaneStaticExplicitKeySignatureTrustEngineFactoryBean extends Abstra
     
     /** {@inheritDoc} */
     protected Object createInstance() throws Exception {
-    	log.debug("[DaneExtension] createInstance()");
+    	log.debug("[DaneExtension] createInstance() method started...");
+    	
         StaticCredentialResolver credResolver = new StaticCredentialResolver(getCredentials());
         log.debug("[DaneExtension] created credResolver with a new StaticCredentialResolver(getCredentials())");
+        
         List<KeyInfoProvider> keyInfoProviders = new ArrayList<KeyInfoProvider>();
         log.debug("[DaneExtension] created a arraylist of keyInfoProviders");
+        
         keyInfoProviders.add(new DSAKeyValueProvider());
         log.debug("[DaneExtension] added DSAKeyValueProvider");
+        
         keyInfoProviders.add(new RSAKeyValueProvider());
         log.debug("[DaneExtension] added RSAKeyValueProvider");
+        
         keyInfoProviders.add(new InlineX509DataProvider());
         log.debug("[DaneExtension] added InlineX509DataProvider");
+        
         KeyInfoCredentialResolver keyInfoCredResolver = new BasicProviderKeyInfoCredentialResolver(keyInfoProviders);
         log.debug("[DaneExtension] created keyInfoCredResolver from new BasicProviderKeyInfoCredentialResolver");
-        log.debug("[DaneExtension] returning DaneExplicitKeySignatureTrustEngine(credResolver, keyUnfoResolver)");
+        
+        log.debug("[DaneExtension] returning DaneExplicitKeySignatureTrustEngine(credResolver, keyInfoResolver)");
         return new DaneExplicitKeySignatureTrustEngine(credResolver, keyInfoCredResolver);
     }
 }

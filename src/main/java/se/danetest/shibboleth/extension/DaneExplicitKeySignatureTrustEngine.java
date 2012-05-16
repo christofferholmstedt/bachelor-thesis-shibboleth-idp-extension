@@ -29,6 +29,7 @@ import org.opensaml.xml.security.criteria.UsageCriteria;
 import org.opensaml.xml.security.keyinfo.KeyInfoCredentialResolver;
 import org.opensaml.xml.security.trust.ExplicitKeyTrustEvaluator;
 import org.opensaml.xml.security.trust.TrustedCredentialTrustEngine;
+import org.opensaml.xml.signature.KeyInfo;
 import org.opensaml.xml.signature.Signature;
 import org.opensaml.xml.signature.SignatureTrustEngine;
 import org.opensaml.xml.signature.impl.BaseSignatureTrustEngine;
@@ -68,7 +69,7 @@ public class DaneExplicitKeySignatureTrustEngine extends BaseSignatureTrustEngin
      */
     public DaneExplicitKeySignatureTrustEngine(CredentialResolver resolver, KeyInfoCredentialResolver keyInfoResolver) {
     	super(keyInfoResolver);
-        log.debug("[DaneExtension] passed super keyInfoResolver = {}", keyInfoResolver);
+        log.debug("[DaneExtension] 'Super' constructor has completeted, keyInfoResolver = {}", keyInfoResolver);
         if (resolver == null) {
         	log.debug("[DaneExtension] resolver == 0");
             throw new IllegalArgumentException("Credential resolver may not be null");
@@ -77,6 +78,7 @@ public class DaneExplicitKeySignatureTrustEngine extends BaseSignatureTrustEngin
         credentialResolver = resolver;
         log.debug("[DaneExtension] credentialResolver = resolver = {}", resolver);
         keyTrust = new ExplicitKeyTrustEvaluator();
+        log.debug("[DaneExtension] New ExplicitKeyTrustEvaluator has been instantiated, keyTrust = {}", keyTrust);
     }
 
     /** {@inheritDoc} */
@@ -87,28 +89,38 @@ public class DaneExplicitKeySignatureTrustEngine extends BaseSignatureTrustEngin
 
     /** {@inheritDoc} */
     public boolean validate(Signature signature, CriteriaSet trustBasisCriteria) throws SecurityException {
-    	log.debug("[DaneExtension] validating with signature = {} and trustBasisCriteria = {}", signature,trustBasisCriteria);
+    	log.debug("[DaneExtension] validating with signature = {} and trustBasisCriteria = {}", signature, trustBasisCriteria);
         checkParams(signature, trustBasisCriteria);
         log.debug("[DaneExtension] signature = {} and trustBasisCriteria = {} parameters checked", signature, trustBasisCriteria);
         CriteriaSet criteriaSet = new CriteriaSet();
         log.debug("[DaneExtension] created new CriteriaSet called criteriaSet = {}", criteriaSet);
         criteriaSet.addAll(trustBasisCriteria);
-        log.debug("[DaneExtension] added trustBasisCreteria to criteriaSet");
+        log.debug("[DaneExtension] added trustBasisCriteria to criteriaSet");
         if (!criteriaSet.contains(UsageCriteria.class)) {
         	log.debug("[DaneExtension] criteriaSet does not contain UsageCriteria.class");
             criteriaSet.add(new UsageCriteria(UsageType.SIGNING));
             log.debug("[DaneExtension] added new UsageCriteria to criteriaSet");
         }
+        /**
+         * Some added to code to dig into the signature object.
+         * Christoffer Holmstedt 2012-05-16
+         */
+        KeyInfo testKey = signature.getKeyInfo();
+        log.debug("[DaneExtension] TestKey.getID {}, ", testKey.getID());
+        
+        /**
+         * End of added code.
+         */
         String jcaAlgorithm = SecurityHelper.getKeyAlgorithmFromURI(signature.getSignatureAlgorithm());
         log.debug("[DaneExtension] SecurityHelper has fetched jcaAlgorithm(KeyAlgorithm from URI) = {} with Signature Algorithm", jcaAlgorithm);
         if (!DatatypeHelper.isEmpty(jcaAlgorithm)) {
         	log.debug("[DaneExtension] DatatypeHelper does not contain jcaAlgorithm");
             criteriaSet.add(new KeyAlgorithmCriteria(jcaAlgorithm), true);
-            log.debug("[DaneExtension] added new KeyAlgorithmCirteria(jcaAlgoritm) = {} to criteriaSet, returned true", jcaAlgorithm);
+            log.debug("[DaneExtension] added new KeyAlgorithmCirteria(jcaAlgoritm) = {} to criteriaSet", jcaAlgorithm);
         }
 
         Iterable<Credential> trustedCredentials = getCredentialResolver().resolve(criteriaSet);
-        log.debug("[DaneExtension] trustedCredentials is set to getCredentialResolver().resolve(criteriaSet)");
+        log.debug("[DaneExtension] trustedCredentials is set to getCredentialResolver().resolve(criteriaSet) = {}", getCredentialResolver().resolve(criteriaSet));
         if (validate(signature, trustedCredentials)) {
         	log.debug("[DaneExtension] signature = {} and trustedCredentials = {} is validated, returns true", signature, trustBasisCriteria);
             return true;
@@ -119,6 +131,18 @@ public class DaneExplicitKeySignatureTrustEngine extends BaseSignatureTrustEngin
         // the trusted credentials directly.
         log.debug("[DaneExtension] Attempting to verify signature using trusted credentials");
 
+        /**
+         * Some added to code to dig into the trustedCredentials Iterable object.
+         * Christoffer Holmstedt 2012-05-16
+         */
+        log.debug("[DaneExtension] ---------------------");
+        for (Credential trustedCredential : trustedCredentials) {
+            log.debug("[DaneExtension] TEST {}", trustedCredential);
+        }
+        log.debug("[DaneExtension] ---------------------");
+        /**
+         * End of added code.
+         */
         for (Credential trustedCredential : trustedCredentials) {
             log.debug("[DaneExtension] for(Credentials trustedCredential : trustedCredentials), signature = {}, trustedCredential = {}", signature, trustedCredential);
             if (verifySignature(signature, trustedCredential)) {

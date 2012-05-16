@@ -35,7 +35,7 @@ import edu.internet2.middleware.shibboleth.common.config.SpringConfigurationUtil
 
 /** Spring bean definition parser for {urn:mace:shibboleth:2.0:security}StaticExplicitKeySignature elements. */
 public class DaneStaticExplicitKeySignatureTrustEngineBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
-
+				 
     /** Schema type. */
     public static final QName SCHEMA_TYPE = new QName(DaneExplicitKeySignatureTrustEngineNamespaceHandler.NAMESPACE, "DaneTrustEngine");
 
@@ -43,16 +43,18 @@ public class DaneStaticExplicitKeySignatureTrustEngineBeanDefinitionParser exten
     private final Logger log = LoggerFactory.getLogger(DaneStaticExplicitKeySignatureTrustEngineBeanDefinitionParser.class);
 
     /** {@inheritDoc} */
-    @SuppressWarnings("rawtypes")
 	protected Class getBeanClass(Element element) {
         return DaneStaticExplicitKeySignatureTrustEngineFactoryBean.class;
     }
 
     /** {@inheritDoc} */
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-        log.info("Parsing configuration for {} trust engine with id: {}", XMLHelper.getXSIType(element).getLocalPart(),
-                element.getAttributeNS(null, "id"));
+        //log.info("[DaneExtension] Parsing configuration for {} trust engine with id: {}", XMLHelper.getXSIType(element).getLocalPart(),
+        //        element.getAttributeNS(null, "id"));
 
+    	log.debug("[DaneExtension] Parsing configuration for {} trust engine with id: {}", XMLHelper.getXSIType(element).getLocalPart(),
+    			element.getAttributeNS(null, "id"));
+    	
         List<Element> childElems = XMLHelper.getChildElementsByTagNameNS(element, DaneExplicitKeySignatureTrustEngineNamespaceHandler.NAMESPACE,
                 "Credential");
         builder.addPropertyValue("credentials", SpringConfigurationUtils
@@ -61,6 +63,7 @@ public class DaneStaticExplicitKeySignatureTrustEngineBeanDefinitionParser exten
 
     /** {@inheritDoc} */
     protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext) {
+    	log.debug("[DaneExtension] resolvId()");
         return DatatypeHelper.safeTrim(element.getAttributeNS(null, "id"));
     }
 }

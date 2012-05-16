@@ -3,7 +3,6 @@
 		xmlns:sec="urn:mace:shibboleth:2.0:security" 
 		targetNamespace="urn:mace:danetest:danetrustengine" 
 		elementFormDefault="qualified">
-        
 
  <import namespace="urn:mace:shibboleth:2.0:security" schemaLocation="classpath:/schema/shibboleth-2.0-security.xsd" />
  
